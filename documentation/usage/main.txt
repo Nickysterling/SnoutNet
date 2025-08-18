@@ -1,0 +1,26 @@
+Usage Guide for main.py
+========================
+
+Command:
+--------
+python main.py [OPTIONS]
+
+Options:
+--------
+--mp PATH          Path to the trained model weights (.pth)
+                   (default: archive/model_weights/snoutnet_weights_E30_B16_hflip_colorj.pth)
+
+Description:
+------------
+This script tests the SnoutNet model on the PetNoseDataset.
+It computes localization errors for the test set, displays
+error statistics, shows a histogram of errors, and allows
+interactive visualization of individual predictions.
+
+Examples:
+---------
+# Run with default model weights
+python main.py
+
+# Run with custom model weights
+python main.py --mp "outputs/model_weights/snoutnet_weights_epoch50.pth"

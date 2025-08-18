@@ -1,0 +1,35 @@
+Usage Guide for train.py
+========================
+
+Command:
+--------
+python train.py [OPTIONS]
+
+Options:
+--------
+--e <int>          Number of epochs to train (default: 30)
+--b <int>          Batch size (default: 32)
+--lr <float>       Learning rate (default: 0.0005)
+--wd <float>       Weight decay (default: 0.00014651200567136424)
+--hflip            Apply horizontal flip transformation (default: False)
+--color            Apply color jitter transformation (default: False)
+
+Description:
+------------
+This script trains the SnoutNet model on the PetNoseDataset.
+It supports optional data augmentations: horizontal flip and color jitter.
+It saves model checkpoints and loss plots in the `outputs` directory.
+
+Examples:
+---------
+# Train with default settings
+python train.py
+
+# Train for 50 epochs with batch size 16
+python train.py --e 50 --b 16
+
+# Train with horizontal flip and color jitter augmentations
+python train.py --hflip --color
+
+# Train with custom learning rate and weight decay
+python train.py --lr 0.001 --wd 0.0001 --e 40 --b 32

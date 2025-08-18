@@ -1,0 +1,48 @@
+Trial 0:
+batch_size: 32
+lr: 0.0009719903909322201
+weight_decay: 0.00014651200567136424
+Validation loss: 467.3214
+
+Trial 1:
+batch_size: 128
+lr: 0.0001426307760200956
+weight_decay: 0.0001511237344782219
+Validation loss: 764.4873
+
+Trial 2:
+batch_size: 64
+lr: 0.00021915825425877932
+weight_decay: 6.487082166980291e-05
+Validation loss: 538.1883
+
+Trial 3:
+batch_size: 64
+lr: 2.290779693786147e-05
+weight_decay: 1.2285146438030237e-05
+Validation loss: 1020.1188
+
+Trial 4:
+batch_size: 128
+lr: 0.0003728045922444661
+weight_decay: 0.000879318071603385
+Validation loss: 628.1597
+
+Trial 5:
+batch_size: 32
+lr: 3.269600944252984e-05
+weight_decay: 0.00015280887110917632
+Validation loss: 834.8051
+
+Trial 6:
+batch_size: 128
+lr: 2.288639851807511e-05
+weight_decay: 2.635555965573213e-05
+Validation loss: 1126.4418
+
+Trial 7:
+batch_size: 32
+lr: 5.581835091803989e-05
+weight_decay: 9.505203314489739e-05
+Validation loss: 761.4074
+
