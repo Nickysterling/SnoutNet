@@ -3,7 +3,17 @@
 import os
 import matplotlib.pyplot as plt
 from torchvision import transforms
-from training.custom_dataset import PetNoseDataset
+from src.training.custom_dataset import PetNoseDataset
+from src.utils import file_paths
+
+paths = file_paths()
+
+PROJECT_ROOT = paths["PROJECT_ROOT"]
+DATA_DIR = paths["DATA_DIR"]
+IMG_DIR = paths["IMG_DIR"]
+
+ANNOTATION_FILE = os.path.join(DATA_DIR, "train_noses.txt")
+VALIDATION_FILE = os.path.join(DATA_DIR, "test_noses.txt")
 
 # Function to plot an image with annotation and a title
 def plot_image(image_tensor, annotation, index):
@@ -26,41 +36,71 @@ def display_images(dataset, start=None, end=None, idx=None):
     for i, (image, label) in rows_to_display:
         plot_image(image, label, i)
 
-if __name__ == "__main__":
-    project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-    img_dir = os.path.join(project_root, "data/images")
 
+def ask_choice(prompt, options, quit_keys=("q",)):
     while True:
-        dataset_choice = input("\nWhich dataset do you want to visualize? (train/val) or 'q' to quit: ").strip().lower()
-        if dataset_choice == 'q':
+        choice = input(prompt).strip().lower()
+        if choice in quit_keys:
+            return None
+        if choice in options:
+            return options[choice]
+        print(f"Invalid choice. Options: {', '.join(options.keys())}")
+
+
+def main():
+    while True:
+        # Choose dataset
+        annotations_file = ask_choice(
+            "\nWould you like to view the train or val dataset? (t/v) or 'q' to quit: ",
+            {"t": ANNOTATION_FILE, "v": VALIDATION_FILE}
+        )
+        if annotations_file is None:
             print("Exiting visualization.")
             break
 
-        if dataset_choice == 'train':
-            annotations_file = os.path.join(project_root, "data/train_noses.txt")
-        elif dataset_choice == 'val':
-            annotations_file = os.path.join(project_root, "data/test_noses.txt")
-        else:
-            print("Invalid choice. Please type 'train', 'val', or 'q'.")
-            continue
+        # Flip transform
+        flip = ask_choice(
+            "\nApply horizontal flip? (y/n) or 'q' to quit: ",
+            {"y": True, "n": False}
+        )
+        if flip is None:
+            print("Exiting visualization.")
+            break
 
+        # Colour jitter transform
+        colour = ask_choice(
+            "\nApply colour jitter? (y/n) or 'q' to quit: ",
+            {"y": True, "n": False}
+        )
+        if colour is None:
+            print("Exiting visualization.")
+            break
+
+        # Build dataset
         dataset = PetNoseDataset(
             annotations_file=annotations_file,
-            img_dir=img_dir,
-            apply_flip=True,
-            apply_color_jitter=False
+            img_dir=IMG_DIR,
+            apply_flip=flip,
+            apply_color_jitter=colour
         )
 
+        # Choose viewing mode
         while True:
-            choice = input("\nDo you want to view a single image or a range? (single/range) or 'b' to go back: ").strip().lower()
-            if choice == 'b':
+            mode = ask_choice(
+                "\nView a single image or a range? (s/r) or 'b' to go back: ",
+                {"s": "single", "r": "range"},
+                quit_keys=("b",)
+            )
+            if mode is None:
                 break
-            if choice == 'single':
-                idx = int(input(f"Enter the index of the image (0 to {len(dataset)-1}): "))
+
+            if mode == "single":
+                idx = int(input(f"Enter index (0 to {len(dataset)-1}): "))
                 display_images(dataset, idx=idx)
-            elif choice == 'range':
-                start = int(input(f"Enter the start index (0 to {len(dataset)-1}): "))
-                end = int(input(f"Enter the end index (exclusive, up to {len(dataset)}): "))
+            elif mode == "range":
+                start = int(input(f"Start index (0 to {len(dataset)-1}): "))
+                end = int(input(f"End index (exclusive ≤ {len(dataset)}): "))
                 display_images(dataset, start=start, end=end)
-            else:
-                print("Invalid choice. Please type 'single', 'range', or 'b'.")
+
+if __name__ == "__main__":
+    main()

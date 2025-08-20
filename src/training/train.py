@@ -1,8 +1,6 @@
 # train.py
 
 import os
-import sys
-
 import time
 import datetime
 import argparse
@@ -15,10 +13,12 @@ from torch import nn, optim
 from torch.utils.data import ConcatDataset
 from torchsummary import summary
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.model.model_arch import SnoutNet 
+from src.training.custom_dataset import PetNoseDataset
+from src.utils import file_paths
 
-from model.model import SnoutNet 
-from training.custom_dataset import PetNoseDataset
+
+paths = file_paths()
 
 # -----------------------------
 # Default configuration
@@ -28,11 +28,15 @@ DEFAULT_BATCH_SIZE = 32
 DEFAULT_LR = 0.0005
 DEFAULT_WEIGHT_DECAY = 0.00014651200567136424
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-ANNOTATION_FILE = os.path.join(PROJECT_ROOT, "data/train_noses.txt")
-VALIDATION_FILE = os.path.join(PROJECT_ROOT, "data/test_noses.txt")
-IMG_DIR = os.path.join(PROJECT_ROOT, "data/images")
-OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
+PROJECT_ROOT = paths["PROJECT_ROOT"]
+DATA_DIR = paths["DATA_DIR"]
+IMG_DIR = paths["IMG_DIR"]
+OUTPUT_DIR = paths["OUTPUT_DIR"]
+MODEL_DIR = paths["MODEL_DIR"]
+PLOT_DIR = paths["PLOT_DIR"]
+
+ANNOTATION_FILE = os.path.join(DATA_DIR, "train_noses.txt")
+VALIDATION_FILE = os.path.join(DATA_DIR, "test_noses.txt")
 
 # ------------------------------
 # Utility Functions
@@ -133,8 +137,8 @@ def plot_losses(train_losses, val_losses, total_val_images, total_training_time,
     plt.figtext(0.5, -0.05, stats_text, wrap=True, horizontalalignment='center', fontsize=10,
                 bbox=dict(facecolor='white', alpha=0.5))
     
-    relative_path = os.path.relpath(plot_path, start=PROJECT_ROOT)
-    plt.title(f"Training Results\nLoss Plot: {relative_path}")
+    # relative_path = os.path.relpath(plot_path, start=PROJECT_ROOT)
+    plt.title(f"Training Results\nLoss Plot: {plot_path}")
     plt.savefig(plot_path, bbox_inches="tight")
     plt.close()
 
@@ -245,13 +249,13 @@ def train_model(model, optimizer, scheduler, loss_fn, train_loader, val_loader,
 def parse_args():
     parser = argparse.ArgumentParser(description="Train SnoutNet model for PetNoseDataset")
     
-    parser.add_argument('--e', type=int, default=DEFAULT_EPOCHS, help="Number of epochs to train")
-    parser.add_argument('--b', type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
-    parser.add_argument('--lr', type=float, default=DEFAULT_LR, help="Learning rate")
-    parser.add_argument('--wd', type=float, default=DEFAULT_WEIGHT_DECAY, help="Weight decay")
+    parser.add_argument('-e', type=int, default=DEFAULT_EPOCHS, help="Number of epochs to train")
+    parser.add_argument('-b', type=int, default=DEFAULT_BATCH_SIZE, help="Batch size")
+    parser.add_argument('-lr', type=float, default=DEFAULT_LR, help="Learning rate")
+    parser.add_argument('-wd', type=float, default=DEFAULT_WEIGHT_DECAY, help="Weight decay")
     
-    parser.add_argument('--hflip', action='store_true', help='Apply horizontal flip transformation')
-    parser.add_argument('--color', action='store_true', help='Apply color jitter transformation')
+    parser.add_argument('-hflip', action='store_true', help='Apply horizontal flip transformation')
+    parser.add_argument('-color', action='store_true', help='Apply color jitter transformation')
     
     return parser.parse_args()
 
@@ -286,8 +290,8 @@ def main():
     if args.color:
         suffix += "_colorj"
 
-    model_path = os.path.join(OUTPUT_DIR, 'model_weights', f'snoutnet_E{args.e}_B{args.b}{suffix}.pth')
-    plot_path = os.path.join(OUTPUT_DIR, 'plots', f'loss_E{args.e}_B{args.b}{suffix}.png')
+    model_path = os.path.join(MODEL_DIR, f'snoutnet_E{args.e}_B{args.b}{suffix}.pth')
+    plot_path = os.path.join(PLOT_DIR, f'loss_E{args.e}_B{args.b}{suffix}.png')
     
     # Train
     train_model(model, optimizer, scheduler, loss_fn,

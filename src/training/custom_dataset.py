@@ -3,7 +3,6 @@
 import os
 import pandas as pd
 import torch
-import matplotlib.pyplot as plt
 from torch.utils.data import Dataset
 from torchvision import transforms
 from PIL import Image

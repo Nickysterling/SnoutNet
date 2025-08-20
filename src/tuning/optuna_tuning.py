@@ -1,28 +1,25 @@
 # optuna_tuning.py
 
 import os
-import sys
-
 import torch
-from torch import nn, optim
-from torch.utils.data import DataLoader
 import optuna
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from src.training.train import train_model, get_dataloaders, setup_model
+from src.utils import file_paths
 
-from model.model import SnoutNet
-from training.custom_dataset import PetNoseDataset
-from training.train import train_model, get_dataloaders, setup_model
-
+paths = file_paths()
 
 # ----------------------------
 # Paths
 # ----------------------------
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-ANNOTATION_FILE = os.path.join(PROJECT_ROOT, "data/train_noses.txt")
-VALIDATION_FILE = os.path.join(PROJECT_ROOT, "data/test_noses.txt")
-IMG_DIR = os.path.join(PROJECT_ROOT, "data/images")
-OUTPUT_FILE = os.path.join(PROJECT_ROOT, "outputs", "optuna_trials_results.txt")
+PROJECT_ROOT = paths["PROJECT_ROOT"]
+DATA_DIR = paths["DATA_DIR"]
+IMG_DIR = paths["IMG_DIR"]
+OUTPUT_DIR = paths["OUTPUT_DIR"]
+
+ANNOTATION_FILE = os.path.join(DATA_DIR, "train_noses.txt")
+VALIDATION_FILE = os.path.join(DATA_DIR, "test_noses.txt")
+OUTPUT_FILE = os.path.join(OUTPUT_DIR, "optuna_trials_results.txt")
 
 
 # ----------------------------
@@ -47,7 +44,7 @@ def objective(trial):
         model, optimizer, scheduler, loss_fn,
         train_loader, val_loader,
         device=device,
-        n_epochs=50,
+        n_epochs=5,
         model_path=None,
         plot_path=None
     )

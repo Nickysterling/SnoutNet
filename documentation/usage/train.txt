@@ -7,12 +7,12 @@ python train.py [OPTIONS]
 
 Options:
 --------
---e <int>          Number of epochs to train (default: 30)
---b <int>          Batch size (default: 32)
---lr <float>       Learning rate (default: 0.0005)
---wd <float>       Weight decay (default: 0.00014651200567136424)
---hflip            Apply horizontal flip transformation (default: False)
---color            Apply color jitter transformation (default: False)
+-e <int>          Number of epochs to train (default: 30)
+-b <int>          Batch size (default: 32)
+-lr <float>       Learning rate (default: 0.0005)
+-wd <float>       Weight decay (default: 0.00014651200567136424)
+-hflip            Apply horizontal flip transformation (default: False)
+-color            Apply color jitter transformation (default: False)
 
 Description:
 ------------

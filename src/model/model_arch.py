@@ -40,23 +40,23 @@ class SnoutNet(nn.Module):
         return self.fc3(x)  # FC3: Output: [batch_size, 2] (u, v coordinates)
     
 # Testing
-# if __name__ == '__main__':
-#     print("Testing architecture...")
+if __name__ == '__main__':
+    print("Testing architecture...")
 
-#     # Get device
-#     device = 'cpu'
-#     if torch.cuda.is_available():
-#         device = 'cuda'
-#     print(f"Using device: {device}\n")
+    # Get device
+    device = 'cpu'
+    if torch.cuda.is_available():
+        device = 'cuda'
+    print(f"Using device: {device}\n")
 
-#     # Create a random dummy tensor with the specified shape
-#     rand_tensor = torch.rand(16, 3, 227, 227)  # Batch size 16, RGB image, 227x227
-#     print(f"Input: {rand_tensor.shape}")  # Display the shape of the tensor
-#     rand_tensor = rand_tensor.to(device=device)
+    # Create a random dummy tensor with the specified shape
+    rand_tensor = torch.rand(16, 3, 227, 227)    # Batch size 16, RGB image, 227x227
+    print(f"Input: {rand_tensor.shape}")         # Display the shape of the tensor
+    rand_tensor = rand_tensor.to(device=device)  
 
-#     model = SnoutNet()
-#     model.to(device)
-#     model.eval()
+    model = SnoutNet()
+    model.to(device)
+    model.eval()
 
-#     output_tensor = model(rand_tensor)
-#     print(f"Output: {output_tensor.shape}")  # Should output [16, 2]
+    output_tensor = model(rand_tensor)
+    print(f"Output: {output_tensor.shape}")      # Should output [16, 2]

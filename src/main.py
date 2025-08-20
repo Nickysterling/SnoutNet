@@ -7,17 +7,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 import torch
-import torch.nn as nn
 from torch.utils.data import DataLoader
 
-from model.model import SnoutNet 
-from training.custom_dataset import PetNoseDataset
-from training.train import calculate_euclidean_distance 
+from src.model.model_arch import SnoutNet 
+from src.training.custom_dataset import PetNoseDataset
+from src.training.train import calculate_euclidean_distance
+from src.utils import file_paths
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-VALIDATION_FILE = os.path.join(PROJECT_ROOT, "data/test_noses.txt")
-IMG_DIR = os.path.join(PROJECT_ROOT, "data/images")
+paths = file_paths()
+
+PROJECT_ROOT = paths["PROJECT_ROOT"]
+DATA_DIR = paths["DATA_DIR"]
+IMG_DIR = paths["IMG_DIR"]
+
 ARCHIVE_DIR = os.path.join(PROJECT_ROOT, "archive")
+VALIDATION_FILE = os.path.join(DATA_DIR, "test_noses.txt") 
 
 # Function to visualize predictions vs ground truth using matplotlib
 def visualize_predictions(image, pred_nose, gt_nose, distance, mean_error):
@@ -27,7 +31,7 @@ def visualize_predictions(image, pred_nose, gt_nose, distance, mean_error):
     gt_x, gt_y = gt_nose
     pred_x, pred_y = pred_nose
 
-    # Print the ground truth and predicted coordinates in the terminal
+    # Print the ground truth and predicted coordinates
     print(f"Ground Truth Coordinates: (x: {gt_x:.2f}, y: {gt_y:.2f})")
     print(f"Predicted Coordinates:   (x: {pred_x:.2f}, y: {pred_y:.2f})")
     print(f"Euclidean Distance (Localization Error) for this image: {distance:.2f} pixels")
@@ -79,12 +83,12 @@ def plot_error_histogram(all_errors):
     plt.show()
 
 # Function to compute localization errors for the entire test set
-def compute_overall_errors(model, test_loader, device):
+def compute_overall_errors(model, val_loader, device):
     model.eval()
     errors = []
 
     with torch.no_grad():
-        for index, (images, labels) in enumerate(test_loader):
+        for index, (images, labels) in enumerate(val_loader):
             images = images.to(device)
             labels = labels.to(device)
             
@@ -128,11 +132,11 @@ def compute_overall_errors(model, test_loader, device):
     return min_error, max_error, mean_error, std_error, errors, best_images, worst_images
 
 # Function to test the model and allow user to view a specific image by index
-def test_model(model, test_loader, device, overall_mean_error):
+def test_model(model, val_loader, device, overall_mean_error):
     model.eval()
 
     # Get the total number of test images
-    total_images = len(test_loader.dataset)
+    total_images = len(val_loader.dataset)
 
     # Prompt the user for an image index to view
     while True:
@@ -146,7 +150,7 @@ def test_model(model, test_loader, device, overall_mean_error):
 
     # Load the specific image and label using the index
     with torch.no_grad():
-        images, labels = test_loader.dataset[index]
+        images, labels = val_loader.dataset[index]
         images = images.unsqueeze(0).to(device)
         labels = labels.unsqueeze(0).to(device)
 
@@ -161,31 +165,32 @@ def test_model(model, test_loader, device, overall_mean_error):
         # Visualize the predictions and compare the error with overall statistics
         visualize_predictions(images.squeeze(0), pred.cpu().numpy(), gt.cpu().numpy(), distance, overall_mean_error)
 
-def interactive_loop(model, test_loader, device, mean_error):
+def interactive_loop(model, val_loader, device, mean_error):
     print("\nYou can now enter a specific image index to view and compare its localization error with the overall test set.")
     while True:
-        test_model(model, test_loader, device, mean_error)
+        test_model(model, val_loader, device, mean_error)
         while True:
-            user_input = input("\nType 'quit' or 'exit' to stop, or press Enter to test another image: ").strip().lower()
+            user_input = input("\nPress enter to test another image or type 'quit' or 'exit' to stop: ").strip().lower()
             if user_input in ('quit', 'exit'):
                 print("Exiting the program.")
                 return
             elif user_input == '':
                 break
             else:
-                print("Invalid input. Please type 'quit' or 'exit' to stop, or press Enter to continue.")
+                print("Invalid input. Please press enter to continue or type 'quit' or 'exit' to stop.")
 
 # Function to parse command-line arguments
 def parse_args():
     parser = argparse.ArgumentParser(description="Test SnoutNet model for PetNoseDataset")
-    parser.add_argument('--mp', type=str, default=None, help="Path to the trained model weights")
+    parser.add_argument('-mp', type=str, default=None, help="Path to the trained model weights")
     return parser.parse_args()
 
 def main():
     args = parse_args()
-    model_path = os.path.abspath(
-    os.path.join(PROJECT_ROOT, args.mp)
-    ) if args.mp else os.path.join(PROJECT_ROOT, "archive", "model_weights", "snoutnet_weights_E30_B16_hflip_colorj.pth")
+    
+    # Select model
+    model_path = os.path.abspath(os.path.join(PROJECT_ROOT, args.mp)
+    ) if args.mp else os.path.join(ARCHIVE_DIR, "model_weights", "snoutnet_weights_E30_B16_hflip_colorj.pth")
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -193,14 +198,14 @@ def main():
     state_dict = torch.load(model_path, map_location=device)
     model.load_state_dict(state_dict)
 
-    test_dataset = PetNoseDataset(annotations_file=VALIDATION_FILE, img_dir=IMG_DIR)
-    test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False)
+    val_dataset = PetNoseDataset(annotations_file=VALIDATION_FILE, img_dir=IMG_DIR)
+    val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)
 
     print("Calculating overall localization error statistics for the test set...")
-    min_error, max_error, mean_error, std_error, errors, best_images, worst_images = compute_overall_errors(model, test_loader, device)
+    min_error, max_error, mean_error, std_error, errors, best_images, worst_images = compute_overall_errors(model, val_loader, device)
 
     plot_error_histogram(errors)
-    interactive_loop(model, test_loader, device, mean_error)
+    interactive_loop(model, val_loader, device, mean_error)
 
 
 if __name__ == '__main__':

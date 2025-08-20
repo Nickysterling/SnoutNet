@@ -7,7 +7,7 @@ python main.py [OPTIONS]
 
 Options:
 --------
---mp PATH          Path to the trained model weights (.pth)
+-mp PATH          Path to the trained model weights (.pth)
                    (default: archive/model_weights/snoutnet_weights_E30_B16_hflip_colorj.pth)
 
 Description:
